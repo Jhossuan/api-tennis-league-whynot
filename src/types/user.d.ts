@@ -4,7 +4,7 @@ export interface UserSchemaI {
     email: string
     password: string
     phone: string
-    metadata: MetadataI
+    metadata?: MetadataI
     created_at?: Date
 }
 

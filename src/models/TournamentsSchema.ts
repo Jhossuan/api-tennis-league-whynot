@@ -48,7 +48,7 @@ const TournamentSchema = new Schema({
         require: true,
     },
     status: {
-        type: String,
+        type: Array,
         require: true,
     },
     created_at: {

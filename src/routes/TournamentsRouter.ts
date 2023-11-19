@@ -38,7 +38,7 @@ export class TournamentsRouter {
     private GetTournaments = async(req: Request, res: Response) => {
         try {
             const { status } = req.query
-            const response = await TournamentsControllers.GetTournaments(status as TournamentStatusT)
+            const response = await TournamentsControllers.GetTournaments(status as string)
             if(!response.success){
                 return res.status(response.code).send(response.error)
             }

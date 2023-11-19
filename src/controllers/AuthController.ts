@@ -200,19 +200,19 @@ export class AuthController {
             const expireIn = expireInEspecificMinutes(5)
 
             console.log('now', now)
-            console.log('expireIn', user.metadata.expireIn)
+            console.log('expireIn', user.metadata?.expireIn)
 
-            if(new Date(now) < new Date(user.metadata.expireIn)){
+            if(new Date(now) < new Date(user.metadata?.expireIn)){
                 return {
                     success: false,
                     code: 404,
                     error: {
-                        msg: `Genera nuevamente ${moment(user.metadata.expireIn).fromNow()}`
+                        msg: `Genera nuevamente ${moment(user.metadata?.expireIn).fromNow()}`
                     }
                 }
             }
 
-            if(user.metadata.repassword){
+            if(user.metadata?.repassword){
                 return {
                     success: false,
                     code: 404,
@@ -264,7 +264,7 @@ export class AuthController {
                 }
             }
 
-            if(!user.metadata.code){
+            if(!user.metadata?.code){
                 return {
                     success: false,
                     code: 404,
@@ -274,7 +274,18 @@ export class AuthController {
                 }
             }
 
-            if(user.metadata.code !== code){
+            const now = getNow()
+            if(new Date(now) > new Date(user.metadata.expireIn)){
+                return {
+                    success: false,
+                    code: 404,
+                    error: {
+                        msg: "El código ha expirado, vuelve a generar otro"
+                    }
+                }
+            }
+
+            if(user.metadata?.code !== code){
                 return {
                     success: false,
                     code: 404,
@@ -325,7 +336,7 @@ export class AuthController {
                 }
             }
 
-            if(!user.metadata.repassword){
+            if(!user.metadata?.repassword){
                 return {
                     success: false,
                     code: 404,

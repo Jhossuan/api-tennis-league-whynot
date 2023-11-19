@@ -34,7 +34,7 @@ export class TournamentsControllers {
         
         try {
             const user = await User.findOne({ uid })
-            if(user?.metadata.userType !== 'admin'){
+            if(user?.metadata?.userType !== 'admin'){
                 return {
                     success: false,
                     code: 401,
@@ -89,6 +89,7 @@ export class TournamentsControllers {
                 }
             }
         } catch (error) {
+            console.log(error)
             return {
                 success: false,
                 code: 500,
@@ -99,13 +100,20 @@ export class TournamentsControllers {
         }
     }
 
-    static GetTournaments = async(status: TournamentStatusT): Promise<ControllerResponse<Object>> => {
+    static GetTournaments = async(status: string): Promise<ControllerResponse<Object>> => {
 
         const tournaments = await Tournament.aggregate([
             {
                 '$match': {
-                    'status': status ?? {
-                        "$ne": undefined
+                    'status': {
+                        ...(status
+                            ? {
+                                '$in': JSON.parse(status)
+                            }
+                            : {
+                                '$ne': undefined
+                            }
+                        ),
                     }
                 }
             }, {
@@ -135,7 +143,7 @@ export class TournamentsControllers {
     static UpdateTournament = async(uid: string, tid: string, newData: TournamentI): Promise<ControllerResponse<Object>> => {
 
         const user = await User.findOne({ uid })
-        if(user?.metadata.userType !== 'admin'){
+        if(user?.metadata?.userType !== 'admin'){
             return {
                 success: false,
                 code: 401,
@@ -197,7 +205,7 @@ export class TournamentsControllers {
     static DeleteTournament = async(uid: string, tid: string): Promise<ControllerResponse<Object>> => {
 
         const user = await User.findOne({ uid })
-        if(user?.metadata.userType !== 'admin'){
+        if(user?.metadata?.userType !== 'admin'){
             return {
                 success: false,
                 code: 401,

@@ -1,7 +1,7 @@
 import Competitors from "../models/CompetitorsSchema";
+import Tournament from "../models/TournamentsSchema";
 import User from "../models/UserSchema";
 import { ControllerResponse } from "../types/app";
-import { CompetitorsI } from "../types/tournament";
 
 export class CompetitorsController {
 
@@ -10,6 +10,7 @@ export class CompetitorsController {
         try {
             const user = await User.findOne({ uid })
             const competitor = await Competitors.findOne({ uid, tournament: tid })
+            const tournament = await Tournament.findOne({ tournament: tid })
 
             if(competitor){
                 return {
@@ -31,12 +32,22 @@ export class CompetitorsController {
                 }
             }
 
-            if(user.metadata.userType == 'admin'){
+            if(user?.metadata?.userType == 'admin'){
                 return {
                     success: false,
                     code: 404,
                     error: {
                         msg: "Los admin no pueden inscribirse a torneos"
+                    }
+                }
+            }
+
+            if(!tournament?.status.includes("OPEN")){
+                return {
+                    success: false,
+                    code: 404,
+                    error: {
+                        msg: "Este torneo ya no admite mas inscripciones"
                     }
                 }
             }

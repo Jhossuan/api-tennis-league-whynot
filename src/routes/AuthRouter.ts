@@ -12,6 +12,7 @@ export class AuthRouter {
         this.router.post('/validation-code', this.SendCode)
         this.router.post('/validate-code', this.ValidateCode)
         this.router.patch('/repassword', this.NewPassword)
+        this.router.get('/decoded', this.DecodedToken)
     }
 
     static getRouter(): Router {
@@ -84,6 +85,21 @@ export class AuthRouter {
             const { email, password } = req.body
 
             const response  = await AuthController.NewPassword(email, password)
+
+            if(!response.success){
+                return res.status(response.code).send(response.error)
+            }
+            return res.status(response.code).send(response.res)
+        } catch (error: any) {
+            return res.status(500).send(error.message)
+        }
+    }
+
+    private DecodedToken = async(req: Request, res: Response) => {
+        try {
+            const { token } = req.query
+
+            const response  = await AuthController.DecodedToken(token as string)
 
             if(!response.success){
                 return res.status(response.code).send(response.error)

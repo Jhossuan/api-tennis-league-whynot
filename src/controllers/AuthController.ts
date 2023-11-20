@@ -157,6 +157,7 @@ export class AuthController {
                 name: user.name,
                 email: user.email,
                 id: user._id,
+                type: user.metadata?.userType,
                 exp: this.ExpirationDate(12)
             }, process.env.TOKEN_SECRET as string)
 
@@ -379,6 +380,38 @@ export class AuthController {
             }
         }
 
+    }
+
+    static DecodedToken = async (token: string): Promise<ControllerResponse<Object>> => {
+        try {
+
+            if(!token){
+                return {
+                    success: false,
+                    code: 404,
+                    error: {
+                        msg: 'Token requerido'
+                    }
+                }
+            }
+
+            const decoded = jwt.verify(token, process.env.TOKEN_SECRET as string)
+
+            return {
+                success: true,
+                code: 200,
+                res: decoded
+            }
+        } catch (error) {
+            console.log('errorJWT', error)
+            return {
+                success: false,
+                code: 500,
+                error: {
+                    msg: 'Error at DecodedToken'
+                }
+            }
+        }
     }
 
 }

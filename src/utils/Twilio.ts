@@ -3,6 +3,8 @@ import twilio from "twilio"
 export const SendMessage = (phone: string, code: string) => {
     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
 
+    console.log(`whatsapp:${phone}`)
+
     client.messages
         .create({
             body: `Tu código de verificación es: ${code}`,

@@ -1,4 +1,4 @@
-name: Despliegue de api
+name: Despliegue de API
 
 on:
   push:
@@ -41,5 +41,16 @@ jobs:
             sudo docker stop api-whynot
             sudo docker rm api-whynot
             sudo docker rmi jhossuan/whynot-league
-            sudo docker pull jhossuan/whynot-league
+
+            sudo docker build \
+              --build-arg PORT=${{ secrets.PORT }} \
+              --build-arg MONGO_URI=${{ secrets.MONGO_URI }} \
+              --build-arg APP_VERSION=${{ secrets.APP_VERSION }} \
+              --build-arg TOKEN_SECRET=${{ secrets.TOKEN_SECRET }} \
+              --build-arg TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }} \
+              --build-arg TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }} \
+              -t jhossuan/whynot-league .
+
+            sudo docker push jhossuan/whynot-league
+
             sudo docker run -d -p 5000:5000 --name api-whynot jhossuan/whynot-league

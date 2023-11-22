@@ -13,7 +13,7 @@ Si quieres hacer un despliegue a tu repositorio de docker hub ejecuta el siguien
     docker-compose build
     docker-compose push
 
-IMPORTANTE:
+## IMPORTANTE:
 Para poder hacer uso del autenticador de usuario y generar una nueva contraseña, debes ingresar y mandar el mensaje al WhtsApp Sandbox de Twilio.
 [SANDBOX DE TWILIO](https://api.whatsapp.com/send/?phone=%2b14155238886&text=join%20either-younger&type=phone_number&app_absent=0)
 

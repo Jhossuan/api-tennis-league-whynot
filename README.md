@@ -1,3 +1,4 @@
+
 # API de liga de tenis Whynot
 
 El backend esta construido con NodeJs, Express, MongoDB y Typescript. Usamos tecnologias como Docker para hacer el despliegue hacia Docker Hub y asi poder llevarnos el contenedor directamente en nuestra instancia EC2 de AWS.
@@ -17,6 +18,8 @@ Si quieres hacer un despliegue a tu repositorio de docker hub ejecuta el siguien
 Para poder hacer uso del autenticador de usuario y generar una nueva contraseña, debes ingresar y mandar el mensaje al WhtsApp Sandbox de Twilio.
 [SANDBOX DE TWILIO](https://api.whatsapp.com/send/?phone=%2b14155238886&text=join%20either-younger&type=phone_number&app_absent=0)
 
-## Documentación de los endpoints
+## Documentación de los endpoints y diagramas de flujo
 Aqui podras ver la forma en como se manejan todas las peticiones de manera detallada.
-https://documenter.getpostman.com/view/19761247/2s9Ye8faZG
+[DOCUMENTACION EN POSTMAN](https://documenter.getpostman.com/view/19761247/2s9Ye8faZG)
+
+[FIGMA DE DIAGRAMAS DE FLUJO](https://www.figma.com/file/cZEKJlXzE9RbfLMOtwxZgi/Tennis-League-PR?type=whiteboard&node-id=0:1&t=LZlm7jiYxRq6zWi5-1)

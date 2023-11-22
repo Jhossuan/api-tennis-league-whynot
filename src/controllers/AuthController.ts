@@ -167,7 +167,8 @@ export class AuthController {
                 code: 200,
                 res: {
                     msg: "Sesión iniciada correctamente",
-                    token
+                    token,
+                    type: user.metadata?.userType
                 }
             }
         } catch (error) {

@@ -23,23 +23,3 @@ jobs:
         run: |
           docker-compose build
           docker-compose push
-        
-      - name: Configurar ambiente AWS
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Conectarse a la instancia EC2
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.EC2_IP_TEST }}
-          username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            sudo docker stop api-whynot
-            sudo docker rm api-whynot
-            sudo docker rmi jhossuan/whynot-league
-            sudo docker push jhossuan/whynot-league
-            sudo docker run --restart=always -d -p 5000:5000 --name api-whynot jhossuan/whynot-league

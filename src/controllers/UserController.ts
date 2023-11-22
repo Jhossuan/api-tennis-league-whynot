@@ -1,4 +1,5 @@
 import Competitors from "../models/CompetitorsSchema";
+import Tournament from "../models/TournamentsSchema";
 import User from "../models/UserSchema";
 import { ControllerResponse } from "../types/app";
 import { UserSchemaI } from "../types/user";
@@ -142,6 +143,44 @@ export class UserController {
                 code: 500,
                 error: {
                     msg: "Error at DeleteUser"
+                }
+            }
+        }
+    }
+
+    static GetAllData = async(): Promise<ControllerResponse<Object>> => {
+
+        const qtyCompetitors = await Competitors.countDocuments()
+        const qtyUsers = await User.countDocuments()
+        const qtyTournaments = await Tournament.countDocuments()
+        const statusTournaments = await Tournament.aggregate([
+            {
+              '$group': {
+                '_id': '$status', 
+                'count': {
+                  '$sum': 1
+                }
+              }
+            }
+          ])
+
+        try {
+            return {
+                success: true,
+                code: 200,
+                res: {
+                    qtyCompetitors,
+                    qtyUsers,
+                    qtyTournaments,
+                    statusTournaments
+                }
+            }
+        } catch (error) {
+            return {
+                success: false,
+                code: 500,
+                error: {
+                    msg:'GetAllData'
                 }
             }
         }

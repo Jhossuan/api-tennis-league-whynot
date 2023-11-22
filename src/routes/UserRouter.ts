@@ -1,7 +1,6 @@
 import { Router, Response, Request } from "express";
 import { UserController } from "../controllers/UserController";
 import verifyToken from "../middlewares/validate-token";
-import { UserSchemaI } from "../types/user";
 
 export class UserRouter {
     private static instance: UserRouter
@@ -11,6 +10,7 @@ export class UserRouter {
         this.router = Router();
         this.router.use(verifyToken)
         this.router.get('/all-users', this.GetAllUsers)
+        this.router.get('/all-data', this.GetAllData)
         this.router.get('/delete', this.DeleteUser)
         this.router.patch('/update', this.UpdateUser)
     }
@@ -54,6 +54,19 @@ export class UserRouter {
         try {
             const { uid, newData } = req.body
             const response  = await UserController.UpdateUser(uid, newData)
+
+            if(!response.success){
+                return res.status(response.code).send(response.error)
+            }
+            return res.status(response.code).send(response.res)
+        } catch (error: any) {
+            return res.status(500).send(error.message)
+        }
+    }
+
+    private GetAllData = async(req: Request, res: Response) => {
+        try {
+            const response  = await UserController.GetAllData()
 
             if(!response.success){
                 return res.status(response.code).send(response.error)

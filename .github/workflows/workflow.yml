@@ -21,7 +21,15 @@ jobs:
 
       - name: Construir y empujar imagen de Docker
         run: |
-          docker-compose build
+          docker-compose build \
+          --build-arg PORT=${{ secrets.PORT }} \
+          --build-arg MONGO_URI=${{ secrets.MONGO_URI }} \
+          --build-arg APP_VERSION=${{ secrets.APP_VERSION }} \
+          --build-arg TOKEN_SECRET=${{ secrets.TOKEN_SECRET }} \
+          --build-arg TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }} \
+          --build-arg TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }} \
+          -t jhossuan/whynot-league .
+
           docker-compose push
         
       - name: Configurar ambiente AWS

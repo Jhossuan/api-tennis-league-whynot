@@ -4,6 +4,7 @@ import { ControllerResponse } from "../types/app"
 import { TournamentI, TournamentStatusT } from "../types/tournament"
 import { ErrorMessages } from "../utils/ErrorMessages"
 import User from "../models/UserSchema"
+import Competitors from "../models/CompetitorsSchema"
 
 export class TournamentsControllers {
 
@@ -205,12 +206,13 @@ export class TournamentsControllers {
     static DeleteTournament = async(uid: string, tid: string): Promise<ControllerResponse<Object>> => {
 
         const user = await User.findOne({ uid })
+        console.log('user', user)
         if(user?.metadata?.userType !== 'admin'){
             return {
                 success: false,
                 code: 401,
                 error: {
-                    msg: "No tienes permisos para editar torneos"
+                    msg: "No tienes permisos para eliminar torneos"
                 }
             }
         }
@@ -231,6 +233,47 @@ export class TournamentsControllers {
                 code: 500,
                 error: {
                     msg: 'Error at DeleteTournament'
+                }
+            }
+        }
+    }
+
+    static GetTournamentsByUser = async(uid: string): Promise<ControllerResponse<Object>> => {
+
+        const tournaments = await Competitors.aggregate([
+            {
+              '$match': {
+                'uid': uid
+              }
+            }, {
+              '$lookup': {
+                'from': 'tournaments', 
+                'localField': 'tournament', 
+                'foreignField': 'tournament', 
+                'as': 'Tournament'
+              }
+            }, {
+              '$project': {
+                '_id': 0, 
+                'uid': 0, 
+                'tournament': 0,
+                "__v": 0
+              }
+            }
+          ])
+        
+        try {
+            return {
+                success: true,
+                code: 200,
+                res: tournaments
+            }
+        } catch (error) {
+            return {
+                success: false,
+                code: 500,
+                error: {
+                    msg: 'Error at GetTournaments'
                 }
             }
         }

@@ -11,7 +11,7 @@ export class CompetitorsRouter {
         this.router.use(verifyToken)
         this.router.post('/register', this.RegisterCompetitor)
         this.router.get('/get', this.GetCompetitors)
-        this.router.delete('/unsuscribe', this.DeleteCompetitor)
+        this.router.post('/unsuscribe', this.DeleteCompetitor)
     }
 
     static getRouter(): Router {

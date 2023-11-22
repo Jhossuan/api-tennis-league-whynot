@@ -12,7 +12,7 @@ export interface TournamentI {
     reward: string
     created_at?: Date
     imageUrl?: string
-    status: TournamentStatusT[]
+    status: TournamentStatusT
 }
 
 export interface CompetitorsI {

@@ -11,7 +11,7 @@ export class UserRouter {
         this.router = Router();
         this.router.use(verifyToken)
         this.router.get('/all-users', this.GetAllUsers)
-        this.router.delete('/delete', this.DeleteUser)
+        this.router.get('/delete', this.DeleteUser)
         this.router.patch('/update', this.UpdateUser)
     }
 

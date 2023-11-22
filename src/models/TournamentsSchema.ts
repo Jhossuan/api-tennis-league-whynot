@@ -45,10 +45,10 @@ const TournamentSchema = new Schema({
     },
     imageUrl: {
         type: String,
-        require: true,
+        require: false,
     },
     status: {
-        type: Array,
+        type: String,
         require: true,
     },
     created_at: {

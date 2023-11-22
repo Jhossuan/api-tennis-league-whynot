@@ -1,6 +1,6 @@
 import { Router, Response, Request } from "express";
 import { TournamentsControllers } from "../controllers/TournamentsController";
-import { TournamentI, TournamentStatusT } from "../types/tournament";
+import { TournamentI } from "../types/tournament";
 import verifyToken from "../middlewares/validate-token";
 
 export class TournamentsRouter {
@@ -11,9 +11,10 @@ export class TournamentsRouter {
         this.router = Router();
         this.router.get('/get', this.GetTournaments)
         this.router.use(verifyToken)
+        this.router.get('/userTournaments', this.GetTournamentsByUser)
         this.router.post('/create', this.CreateTournament)
         this.router.patch('/update', this.UpdateTournament)
-        this.router.delete('/delete', this.DeleteTournament)
+        this.router.post('/delete', this.DeleteTournament)
     }
 
     static getRouter(): Router {
@@ -35,10 +36,10 @@ export class TournamentsRouter {
         }
     }
 
-    private GetTournaments = async(req: Request, res: Response) => {
+    private GetTournamentsByUser = async(req: Request, res: Response) => {
         try {
-            const { status } = req.query
-            const response = await TournamentsControllers.GetTournaments(status as string)
+            const { uid } = req.query
+            const response = await TournamentsControllers.GetTournamentsByUser(uid as string)
             if(!response.success){
                 return res.status(response.code).send(response.error)
             }
@@ -66,6 +67,19 @@ export class TournamentsRouter {
         try {
             const { uid, tid } = req.body
             const response = await TournamentsControllers.DeleteTournament(uid, tid)
+            if(!response.success){
+                return res.status(response.code).send(response.error)
+            }
+            return res.status(response.code).send(response.res)
+        } catch (error: any) {
+            return res.status(500).send(error.message)
+        }
+    }
+
+    private GetTournaments = async(req: Request, res: Response) => {
+        try {
+            const { status } = req.query
+            const response = await TournamentsControllers.GetTournaments(status as string)
             if(!response.success){
                 return res.status(response.code).send(response.error)
             }

@@ -42,12 +42,12 @@ export class CompetitorsController {
                 }
             }
 
-            if(!tournament?.status.includes("OPEN")){
+            if(tournament?.status !== 'OPEN'){
                 return {
                     success: false,
                     code: 404,
                     error: {
-                        msg: "Este torneo ya no admite mas inscripciones"
+                        msg: "Este torneo no tiene inscripciones abiertas"
                     }
                 }
             }
@@ -80,51 +80,53 @@ export class CompetitorsController {
         const competitors = await Competitors.aggregate([
             {
               '$lookup': {
-                'from': 'tournaments', 
-                'localField': 'tournament', 
-                'foreignField': 'tournament', 
+                'from': 'tournaments',
+                'localField': 'tournament',
+                'foreignField': 'tournament',
                 'as': 'tournament'
               }
-            },{
-                '$unwind': '$tournament'
-            },{
-              '$project': {
-                '_id': 0, 
-                'uid': 1, 
-                'tournament': {
-                  'title': 1, 
-                  'description': 1, 
-                  'eventDate': 1, 
-                  'location': 1, 
-                  'price': 1, 
-                  'status': 1
-                }
-              }
-            }, {
+            },
+            {
+              '$unwind': '$tournament'
+            },
+            {
               '$lookup': {
-                'from': 'users', 
-                'localField': 'uid', 
-                'foreignField': 'uid', 
+                'from': 'users',
+                'localField': 'uid',
+                'foreignField': 'uid',
                 'as': 'user'
               }
-            }, {
-                '$unwind': '$user'
-            },{
+            },
+            {
+              '$unwind': '$user'
+            },
+            {
               '$project': {
-                'tournament': 1, 
-                'user': {
-                  'name': 1, 
-                  'email': 1, 
-                  'phone': 1, 
-                  'uid': 1
-                }
+                '_id': 0,
+                'title': '$tournament.title',
+                'tournament': '$tournament.tournament',
+                'description': '$tournament.description',
+                'eventDate': '$tournament.eventDate',
+                'location': '$tournament.location',
+                'price': '$tournament.price',
+                'status': '$tournament.status',
+                'name': '$user.name',
+                'email': '$user.email',
+                'phone': '$user.phone',
+                'uid': '$user.uid'
               }
-            }, {
+            },
+            {
+              '$replaceRoot': { 'newRoot': '$$ROOT' }
+            },
+            {
               '$sort': {
                 'created_at': -1
               }
             }
-          ])
+          ]);
+          
+          
 
         try {
             return {

@@ -1,3 +1,4 @@
+import Competitors from "../models/CompetitorsSchema";
 import User from "../models/UserSchema";
 import { ControllerResponse } from "../types/app";
 import { UserSchemaI } from "../types/user";
@@ -125,6 +126,7 @@ export class UserController {
         }
 
         await User.findOneAndDelete({ uid })
+        await Competitors.deleteMany({ uid })
 
         try {
             return {

@@ -3,7 +3,7 @@ name: Despliegue de API
 on:
   push:
     branches:
-      - main
+      - main ( desactivo el deploy automatico a docker hub por el momento )
 
 jobs:
   deploy:

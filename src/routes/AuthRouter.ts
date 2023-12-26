@@ -8,6 +8,7 @@ export class AuthRouter {
     private constructor() {
         this.router = Router();
         this.router.post('/register', this.RegisterUser)
+        this.router.post('/profile', this.CompleteProfile)
         this.router.post('/login', this.Login)
         this.router.post('/validation-code', this.SendCode)
         this.router.post('/validate-code', this.ValidateCode)
@@ -24,8 +25,20 @@ export class AuthRouter {
 
     private RegisterUser = async(req: Request, res: Response) => {
         try {
-            const { name, email, password, phone, userType } = req.body
-            const response = await AuthController.Register(name, email, password, phone, userType)
+            const { name, email, password, userType } = req.body
+            const response = await AuthController.Register(name, email, password, userType)
+            if(!response.success){
+                return res.status(response.code).send(response.error)
+            }
+            return res.status(response.code).send(response.res)
+        } catch (error: any) {
+            return res.status(500).send(error.message)
+        }
+    }
+
+    private CompleteProfile = async(req: Request, res: Response) => {
+        try {
+            const response = await AuthController.CompleteProfile(req.body)
             if(!response.success){
                 return res.status(response.code).send(response.error)
             }
@@ -52,9 +65,9 @@ export class AuthRouter {
 
     private SendCode = async(req: Request, res: Response) => {
         try {
-            const { email } = req.body
+            const { email, type } = req.body
 
-            const response  = await AuthController.SendCode(email)
+            const response  = await AuthController.SendCode(email, type)
 
             if(!response.success){
                 return res.status(response.code).send(response.error)
@@ -67,9 +80,9 @@ export class AuthRouter {
 
     private ValidateCode = async(req: Request, res: Response) => {
         try {
-            const { email, code } = req.body
+            const { email, code, type } = req.body
 
-            const response  = await AuthController.ValidateCode(email, code)
+            const response  = await AuthController.ValidateCode(email, code, type)
 
             if(!response.success){
                 return res.status(response.code).send(response.error)

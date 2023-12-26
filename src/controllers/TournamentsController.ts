@@ -1,7 +1,7 @@
 import Joi from "joi"
 import Tournament from "../models/TournamentsSchema"
 import { ControllerResponse } from "../types/app"
-import { TournamentI, TournamentStatusT } from "../types/tournament"
+import { TournamentI } from "../types/tournament"
 import { ErrorMessages } from "../utils/ErrorMessages"
 import User from "../models/UserSchema"
 import Competitors from "../models/CompetitorsSchema"
@@ -29,10 +29,11 @@ export class TournamentsControllers {
         maxParticipants,
         reward,
         status,
-        imageUrl
+        imageUrl,
+        league
     }: TournamentI): Promise<ControllerResponse<Object>> => {
 
-        
+
         try {
             const user = await User.findOne({ uid })
             if(user?.metadata?.userType !== 'admin'){
@@ -77,7 +78,8 @@ export class TournamentsControllers {
                 maxParticipants,
                 reward,
                 imageUrl,
-                status
+                status,
+                league
             })
 
             await tournament.save()

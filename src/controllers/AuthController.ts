@@ -9,14 +9,26 @@ import { MetadataI } from "../types/user";
 import { ErrorMessages } from "../utils/ErrorMessages";
 import { SendMessage } from "../utils/Twilio";
 import { expireInEspecificMinutes, getNow } from "../utils/DateTools";
+import Profile, { ProfileI } from "../models/ProfileSchema";
 
 export class AuthController {
 
     static SchemaRegister = Joi.object({
         name: Joi.string().min(4).max(255).required(),
         email: Joi.string().min(6).max(255).required().email(),
-        phone: Joi.string().min(10).max(13).required(),
-        password: Joi.string().min(6).max(1024).required()
+        password: Joi.string().min(6).max(1024).required(),
+        userType: Joi.string().required()
+    })
+
+    static SchemaProfile = Joi.object({
+        uid: Joi.string().min(4).max(20).required(),
+        gender: Joi.required(),
+        birthdate: Joi.date().required(),
+        phone: Joi.string().min(4).max(13).required(),
+        skill_level: Joi.string().min(3).max(30).required(),
+        municipality: Joi.string().min(4).max(45).required(),
+        weekly_availability: Joi.string().min(4).max(45).required(),
+        sport: Joi.string().min(4).max(30).required(),
     })
 
     static SchemaLogin = Joi.object({
@@ -41,9 +53,9 @@ export class AuthController {
         name: string,
         email: string,
         password: string,
-        phone: string,
         userType: 'admin' | 'regular'
     ): Promise<ControllerResponse<Object>> => {
+        console.log('entra')
         try {
             const emailToVerify = await User.findOne({ email })
             if(emailToVerify){
@@ -56,10 +68,9 @@ export class AuthController {
                 }
             }
     
-            const { error } = this.SchemaRegister.validate({ name, email, password, phone })
+            const { error } = this.SchemaRegister.validate({ name, email, password, userType })
     
             if(error) {
-                console.log(error)
                 return {
                     success: false,
                     code: 404,
@@ -69,18 +80,9 @@ export class AuthController {
                 }
             }
     
-            if(!userType){
-                return {
-                    success: false,
-                    code: 404,
-                    error: {
-                        msg: "El tipo de usuario es requerido"
-                    }
-                }
-            }
-    
             const metadata: MetadataI = {
-                userType: userType
+                userType: userType,
+                identity_verified: false,
             }
     
             const salt = await bcrypt.genSalt(10)
@@ -89,19 +91,16 @@ export class AuthController {
             const user = new User({
                 name,
                 email,
-                phone,
                 password: hashPassword,
                 metadata
             })
 
-            await user.save()
+            const response = await user.save()
 
             return {
                 success: true,
                 code: 200,
-                res: {
-                    msg: "Registro exitoso"
-                }
+                res: response
             }
         } catch (error) {
             console.log('error', error)
@@ -114,6 +113,65 @@ export class AuthController {
             }
         }
     };
+
+    static CompleteProfile = async (data: ProfileI): Promise<ControllerResponse<Object>> => {
+
+        const { uid, gender, birthdate, phone, skill_level, municipality, weekly_availability, sport } = data
+
+        const profile = await Profile.findOne({ uid })
+        if(profile){
+            return {
+                success: false,
+                code: 404,
+                error: {
+                    msg: 'Este usuario ya tiene un perfil'
+                }
+            }
+        }
+
+        const { error } = this.SchemaProfile.validate(data)
+        
+        if(error) {
+            return {
+                success: false,
+                code: 404,
+                error: {
+                    msg: ErrorMessages(error.details[0].message)
+                }
+            }
+        }
+
+        const newProfile = new Profile({
+            uid,
+            gender,
+            birthdate,
+            phone,
+            skill_level,
+            municipality,
+            weekly_availability,
+            sport
+        })
+
+        await newProfile.save()
+
+        try {
+            return {
+                success: true,
+                code: 200,
+                res: {
+                    msg: 'Perfil creado correctamente'
+                }
+            }
+        } catch (error) {
+            return {
+                success: false,
+                code: 500,
+                error: {
+                    msg: 'Error at CompleteProfile'
+                }
+            }
+        }
+    }
 
     static Login = async (
         email: string,
@@ -185,6 +243,7 @@ export class AuthController {
 
     static SendCode = async (
         email: string,
+        type: 'repassword' | 'identity_verified'
     ): Promise<ControllerResponse<Object>> => {
 
         try {
@@ -199,8 +258,26 @@ export class AuthController {
                 }
             }
 
+            const profile = await Profile.findOne({ uid: user?.uid })
+
+            if(!profile){
+                return {
+                    success: false,
+                    code: 404,
+                    error: {
+                        msg: 'Completa tu perfil, antes de verificar tu cuenta'
+                    }
+                }
+            }
+
             const now = getNow()
             const expireIn = expireInEspecificMinutes(5)
+
+            const code = this.VerificationNumber()
+            console.log('CODIGO', code)
+            // Con este estamos encriptando el codigo de verificacion, asi lo guardamos de manera segura en la DB
+            const salt = await bcrypt.genSalt(10)
+            const hashCode = await bcrypt.hash(code, salt)
 
             console.log('now', now)
             console.log('expireIn', user.metadata?.expireIn)
@@ -215,6 +292,56 @@ export class AuthController {
                 }
             }
 
+            if(type === 'identity_verified'){
+                try {
+                    if(user.metadata?.identity_verified){
+                        return {
+                            success: false,
+                            code: 404,
+                            error: {
+                                msg: 'Este usuario ya esta verificado'
+                            }
+                        }
+                    }
+
+                    SendMessage(profile.phone, code)
+
+                    await User.findOneAndUpdate(
+                        { email },
+                        {
+                            "metadata.code": hashCode,
+                            "metadata.expireIn": expireIn
+                        }
+                    )
+                    return {
+                        success: true,
+                        code: 200,
+                        res: {
+                            msg: "Código de verificación enviado",
+                            uid: user.uid
+                        }
+                    }
+                } catch (error) {
+                    return {
+                        success: false,
+                        code: 404,
+                        error: {
+                            msg: "Error at identity_verified"
+                        }
+                    }
+                }
+            }
+
+            if(!user.metadata?.identity_verified){
+                return {
+                    success: false,
+                    code: 404,
+                    error: {
+                        msg: "Verifica tu cuenta"
+                    }
+                }
+            }
+    
             if(user.metadata?.repassword){
                 return {
                     success: false,
@@ -224,20 +351,23 @@ export class AuthController {
                     }
                 }
             }
-
-            const code = this.VerificationNumber()
-            SendMessage(user.phone, code)
     
+            SendMessage(profile.phone, code)
+
             await User.findOneAndUpdate(
                 { email },
-                { "metadata.code": code, "metadata.expireIn": expireIn }
+                { 
+                    "metadata.code": hashCode,
+                    "metadata.expireIn": expireIn
+                }
             )
 
             return {
                 success: true,
                 code: 200,
                 res: {
-                    msg: 'Código enviado'
+                    msg: 'Código de recuperación enviado',
+                    uid: user.uid
                 }
             }
         } catch (error) {
@@ -253,7 +383,8 @@ export class AuthController {
 
     static ValidateCode = async (
         email: string,
-        code: string
+        code: string,
+        type: 'repassword' | 'identity_verified'
     ): Promise<ControllerResponse<Object>> => {
         try {
             const user = await User.findOne({ email })
@@ -287,8 +418,11 @@ export class AuthController {
                     }
                 }
             }
-
-            if(user.metadata?.code !== code){
+            
+            const hashCode = await bcrypt.compare(code, user.metadata.code)
+            console.log('code', code)
+            console.log('hashCode', hashCode)
+            if(!hashCode){
                 return {
                     success: false,
                     code: 404,
@@ -298,9 +432,23 @@ export class AuthController {
                 }
             }
 
+            let update;
+            if(type === 'repassword'){
+                update = { "metadata.repassword": true }
+            }
+            if(type === 'identity_verified'){
+                update = {
+                    $unset: {
+                        "metadata.code": 1,
+                        "metadata.expireIn": 1,
+                    },
+                    $set: { "metadata.identity_verified": true }
+                }
+            }
+
             await User.findOneAndUpdate(
                 { email },
-                { "metadata.repassword": true }
+                update
             )
 
             return {

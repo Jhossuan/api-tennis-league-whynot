@@ -1,4 +1,5 @@
 import Competitors from "../models/CompetitorsSchema";
+import Profile from "../models/ProfileSchema";
 import Tournament from "../models/TournamentsSchema";
 import User from "../models/UserSchema";
 import { ControllerResponse } from "../types/app";
@@ -20,14 +21,29 @@ export class UserController {
               '$project': {
                 'name': 1, 
                 'email': 1, 
-                'phone': 1, 
                 'metadata': 1, 
                 'uid': 1, 
                 'created_at': 1
               }
-            }, {
+            },
+            {
+                '$lookup': {
+                  'from': "profiles",
+                  'localField': "uid",
+                  'foreignField': "uid",
+                  'as': "profile",
+                }
+            },{
+                '$unwind': '$profile'
+            },
+            {
               '$sort': {
-                'created_at': -1
+                'created_at': -1,
+              }
+            },
+            {
+              '$sort': {
+                'metadata.userType': 1
               }
             }
         ])
@@ -128,6 +144,7 @@ export class UserController {
 
         await User.findOneAndDelete({ uid })
         await Competitors.deleteMany({ uid })
+        await Profile.findOneAndDelete({ uid })
 
         try {
             return {

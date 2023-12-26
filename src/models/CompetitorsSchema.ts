@@ -6,7 +6,11 @@ const CompetitorsSchema = new Schema({
         type: String,
         require: true
     },
-    tournament: {
+    type: {
+        type: String,
+        require: true
+    },
+    eventId: {
         type: String,
         require: true
     },

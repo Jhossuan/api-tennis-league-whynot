@@ -4,6 +4,8 @@ export const ErrorMessages = (error: string) => {
             return "La contraseña es requerida"
         case "\"email\" is required":
             return "El correo es requerido"
+        case "\"userType\" is required":
+            return "El tipo de usuario es requerido"
         case "\"phone\" is required":
             return "El telefono es requerido"
         case "\"email\" must be a valid email":

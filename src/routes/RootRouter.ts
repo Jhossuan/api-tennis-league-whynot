@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { AuthRouter } from "./AuthRouter";
-import verifyToken from "../middlewares/validate-token";
 import { UserRouter } from "./UserRouter";
 import { TournamentsRouter } from "./TournamentsRouter";
 import { CompetitorsRouter } from "./CompetitorsRouter";
@@ -12,10 +11,10 @@ export class RootRouter {
 
     constructor() {
         this.router = Router()
-        this.router.use(`/${process.env.APP_VERSION}/auth`, AuthRouter.getRouter())
-        this.router.use(`/${process.env.APP_VERSION}/user`, UserRouter.getRouter())
-        this.router.use(`/${process.env.APP_VERSION}/tournaments`, TournamentsRouter.getRouter())
-        this.router.use(`/${process.env.APP_VERSION}/competitors`, CompetitorsRouter.getRouter())
+        this.router.use(`/v1/auth`, AuthRouter.getRouter())
+        this.router.use(`/v1/user`, UserRouter.getRouter())
+        this.router.use(`/v1/tournaments`, TournamentsRouter.getRouter())
+        this.router.use(`/v1/competitors`, CompetitorsRouter.getRouter())
     }
 
     static getRouter(): Router {

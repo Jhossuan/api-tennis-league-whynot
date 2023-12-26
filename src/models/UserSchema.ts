@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
-import ShortUniqueId from "short-unique-id";
 import { UserSchemaI } from "../types/user";
+import ShortUniqueId from "short-unique-id";
 
 const uid = new ShortUniqueId({ length:20 });
 
@@ -22,12 +22,7 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
-        require: true,
-        minlength: 6
-    },
-    phone: {
-        type: String,
-        require: true,
+        require: true
     },
     metadata: {
         type: Object,
